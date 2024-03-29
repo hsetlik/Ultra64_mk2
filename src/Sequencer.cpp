@@ -22,6 +22,15 @@ Ultra64::~Ultra64()
 
 void Ultra64::init()
 {
+    // set pin modes
+    pinMode(EXP_CS, OUTPUT);
+    digitalWrite(EXP_CS, HIGH);
+    //set up SPI and initialize the MCP23S17 expander
+    SPI.begin(SCK, MOSI, MISO, EXP_CS);
+    if(!exp.begin_SPI(EXP_CS, &SPI, HW_ADDR))
+    {
+        Serial.println("Error! Failed to initialize IO expander!");
+    }
     // pixels
     pixels = new Adafruit_NeoPixel(24, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
     pixels->begin();
@@ -53,7 +62,7 @@ void Ultra64::pollInputs()
     long cPos = encC->getPosition();
     if(cPos != encCPos)
     {
-        encoderTurned(1, cPos < encCPos);
+        encoderTurned(2, cPos < encCPos);
         encCPos = cPos;
     }
 }

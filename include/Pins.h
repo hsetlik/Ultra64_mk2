@@ -7,6 +7,7 @@
 #define MISO 12
 #define EXP_CS 2
 #define EXP_RST 7
+#define HW_ADDR 0b110
 
 // I2C
 #define SDA 17

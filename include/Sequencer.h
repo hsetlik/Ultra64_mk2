@@ -1,10 +1,9 @@
 #pragma once
-#include "Pins.h"
 #include <Arduino.h>
 #include <Adafruit_MCP23X17.h>
 #include <Adafruit_NeoPixel.h>
 #include <RotaryEncoder.h>
-
+#include "Pins.h"
 class Ultra64
 {
 public:
@@ -18,12 +17,15 @@ void pollInputs();
 void updateOutputs();
 private:
 Adafruit_NeoPixel* pixels;
+
 RotaryEncoder* encA;
 RotaryEncoder* encB;
 RotaryEncoder* encC;
 long encAPos;
 long encBPos;
 long encCPos;
+
+Adafruit_MCP23X17 exp;
 // control callback stuff
 void encoderTurned(uint8_t enc, bool up);
 
