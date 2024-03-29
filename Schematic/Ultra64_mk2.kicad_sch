@@ -1,0 +1,48 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid 7c910bf0-014b-41b7-a763-721819918159)
+
+  (paper "A4")
+
+  (lib_symbols
+  )
+
+
+  (sheet (at 24.13 69.215) (size 44.45 28.575) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid 164513ec-fa21-45a6-9c82-923a717b1a69)
+    (property "Sheetname" "MCU" (at 24.13 68.5034 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "MCU.kicad_sch" (at 24.13 98.3746 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "Ultra64_mk2"
+        (path "/7c910bf0-014b-41b7-a763-721819918159" (page "3"))
+      )
+    )
+  )
+
+  (sheet (at 24.13 23.495) (size 44.45 34.925) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid 7528ab67-f745-474c-b4c8-385d5d5047ce)
+    (property "Sheetname" "IO" (at 24.13 22.7834 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "IO.kicad_sch" (at 24.13 59.0046 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "Ultra64_mk2"
+        (path "/7c910bf0-014b-41b7-a763-721819918159" (page "2"))
+      )
+    )
+  )
+
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)
