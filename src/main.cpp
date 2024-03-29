@@ -1,8 +1,10 @@
 #include "Sequencer.h"
-/*
-*/
+
+
+Ultra64 seq;
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(115200);
+  seq.init();
 }
 
 void loop() {

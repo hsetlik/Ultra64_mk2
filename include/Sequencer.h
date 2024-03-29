@@ -3,7 +3,22 @@
 #include <Adafruit_MCP23X17.h>
 #include <Adafruit_NeoPixel.h>
 #include <RotaryEncoder.h>
+#include <array>
+#include "MCPButton.h"
 #include "Pins.h"
+
+enum ButtonID
+{
+EncA,
+EncB,
+EncC,
+C1,
+C2,
+C3,
+C4,
+PL,
+PR
+};
 class Ultra64
 {
 public:
@@ -26,7 +41,19 @@ long encBPos;
 long encCPos;
 
 Adafruit_MCP23X17 exp;
+
+MCPButton* encAButton;
+MCPButton* encBButton;
+MCPButton* encCButton;
+MCPButton* c1;
+MCPButton* c2;
+MCPButton* c3;
+MCPButton* c4;
+MCPButton* pLeft;
+MCPButton* pRight;
+std::array<MCPButton*, 9> buttons = {encAButton, encBButton, encCButton, c1, c2, c3, c4, pLeft, pRight};
 // control callback stuff
 void encoderTurned(uint8_t enc, bool up);
-
+void buttonPressed(ButtonID id);
+void buttonHeld(ButtonID id);
 };
