@@ -17,12 +17,12 @@ void MCPButton::tick()
     bool currentState = mcp->digitalRead(pin);
     if(currentState != prevState)
     {
-        holdLatch = false;
         // check for releasing a short press
-        if(onPressSet && currentState && ticksSinceChange > 4)
+        if(onPressSet && currentState && ticksSinceChange > 4 && !holdLatch)
         {
             onPress();
         }
+        holdLatch = false;
         ticksSinceChange = 0;
         prevState = currentState;
     }

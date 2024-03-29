@@ -142,14 +142,20 @@ void Ultra64::encoderTurned(uint8_t enc, bool dir)
     {
         case 0: // Left encoder: used to select the current step
         {
+            shiftSelectedStep(dir);
             break;
         }
         case 1: // Middle encoder: used to set the current pitch or length of the selected note
         {
+            if(lengthMode)
+                shiftStepLength(dir);
+            else
+                shiftStepNote(dir);
             break;
         }
         case 2: // Right encoder: used to change the tempo
         {
+            shiftTempo(dir);
             break;
         }
         default:
@@ -161,40 +167,56 @@ void Ultra64::buttonPressed(ButtonID id)
 {
     switch(id)
     {
-        case EncA:
+        case EncA: // toggles note on/off
         {
+            auto& s = getSelected();
+            s.gate = !s.gate;
             break;
         }
-        case EncB:
+        case EncB: // switches between note mode and length mode
         {
+            lengthMode = !lengthMode;
             break;
         }
-        case EncC:
+        case EncC: // play/stop button
         {
+            isPlaying = !isPlaying;
             break;
         }
         case C1:
         {
+            selectedTrack = 0;
             break;
         }
         case C2:
         {
+            selectedTrack = 1;
             break;
         }
         case C3:
         {
+            selectedTrack = 2;
             break;
         }
         case C4:
         {
+            selectedTrack = 3;
             break;
         }
-        case PL:
+        case PL: // move selected step left one page
         {
+            if(!isPlaying && !quarterMode)
+            {
+                selectedStep = (selectedStep < 16) ? 48 + selectedStep : selectedStep - 16;
+            }
             break;
         }
-        case PR:
+        case PR: // move right one page
         {
+            if(!isPlaying && !quarterMode)
+            {
+                selectedStep = (selectedStep + 16) % 64;
+            }
             break;
         }
         default:
@@ -206,7 +228,7 @@ void Ultra64::buttonHeld(ButtonID id)
 {
     switch(id)
     {
-        case EncA:
+        case EncA: 
         {
             break;
         }
@@ -220,22 +242,27 @@ void Ultra64::buttonHeld(ButtonID id)
         }
         case C1:
         {
+            seq.clearTrack(0);
             break;
         }
         case C2:
         {
+            seq.clearTrack(1);
             break;
         }
         case C3:
         {
+            seq.clearTrack(2);
             break;
         }
         case C4:
         {
+            seq.clearTrack(3);
             break;
         }
-        case PL:
+        case PL: // toggles quarter mode
         {
+            quarterMode = !quarterMode;
             break;
         }
         case PR:
@@ -245,5 +272,53 @@ void Ultra64::buttonHeld(ButtonID id)
         default:
             break;
     }
+}
+
+void Ultra64::shiftTempo(bool dir)
+{
+    if (dir)
+        currentTempo = std::min<uint16_t>(currentTempo + 1, TEMPO_MAX);
+    else
+        currentTempo = std::max<uint16_t>(currentTempo - 1, TEMPO_MIN);
+}
+
+void Ultra64::shiftSelectedStep(bool dir)
+{
+    const uint8_t max = quarterMode ? 16 : 64;
+    if(dir)
+    {
+        selectedStep = (selectedStep + 1) % max;
+    }
+    else
+    {
+        selectedStep = (selectedStep == 0) ? max - 1 : selectedStep - 1;
+    }
+}
+
+void Ultra64::shiftStepNote(bool dir)
+{
+    uint8_t& note = getSelected().midiNum;
+    if(dir)
+    {
+        note = std::min<uint8_t>(note + 1, 127);
+    }
+    else
+    {
+        note = (note == 0) ? 0 : note - 1;
+    }
+}
+
+void Ultra64::shiftStepLength(bool dir)
+{
+    uint8_t& length = getSelected().length;
+    if(dir)
+    {
+        length = std::min<uint8_t>(length + 1, 255);
+    }
+    else
+    {
+        length = std::max<uint8_t>(length - 1, LENGTH_MIN);
+    }
+
 }
 //===================================================================================
