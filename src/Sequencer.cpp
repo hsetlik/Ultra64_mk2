@@ -1,6 +1,7 @@
 #include "Sequencer.h"
 
 Ultra64::Ultra64() : pixels(nullptr),
+                     display(nullptr),
                      encA(nullptr),
                      encB(nullptr),
                      encC(nullptr),
@@ -22,6 +23,7 @@ Ultra64::Ultra64() : pixels(nullptr),
 Ultra64::~Ultra64()
 {
     delete pixels;
+    delete display;
     delete encA;
     delete encB;
     delete encC;
@@ -39,11 +41,26 @@ Ultra64::~Ultra64()
 
 void Ultra64::init()
 {
+    // initialize i2c and DAC
+    Wire.begin(SDA, SCL);
+
+    display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
+    if(!display->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+    {
+        Serial.println("Error! Failed to initialize display!");
+    }
+    display->display();
+
+    if(!dac.begin())
+    {
+        Serial.println("Error! Failed to intialize DAC!");
+    }
+
     // set pin modes
     pinMode(EXP_CS, OUTPUT);
     digitalWrite(EXP_CS, HIGH);
     // set up SPI and initialize the MCP23S17 expander
-    SPI.begin(SCK, MOSI, MISO, EXP_CS);
+    SPI.begin(SCK, MISO, MOSI, EXP_CS);
     if (!exp.begin_SPI(EXP_CS, &SPI, HW_ADDR))
     {
         Serial.println("Error! Failed to initialize IO expander!");
@@ -103,7 +120,7 @@ void Ultra64::init()
                        { this->buttonPressed(PR); });
     pRight->setOnHold([this]()
                       { this->buttonHeld(PR); });
-
+    
     // pixels
     pixels = new Adafruit_NeoPixel(24, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
     pixels->begin();
@@ -117,6 +134,7 @@ void Ultra64::init()
 void Ultra64::pollInputs()
 {
     // check encoders
+    encA->tick();
     long aPos = encA->getPosition();
     if (aPos != encAPos)
     {
@@ -124,6 +142,7 @@ void Ultra64::pollInputs()
         encAPos = aPos;
     }
 
+    encB->tick();
     long bPos = encB->getPosition();
     if (bPos != encBPos)
     {
@@ -131,6 +150,7 @@ void Ultra64::pollInputs()
         encBPos = bPos;
     }
 
+    encC->tick();
     long cPos = encC->getPosition();
     if (cPos != encCPos)
     {
@@ -333,6 +353,12 @@ void Ultra64::shiftStepLength(bool dir)
     }
 }
 //===================================================================================
+
+float Ultra64::noteLengthMs(uint8_t length)
+{
+    const float max = stepLengthMs * 0.95f;
+    return max * ((float)length / 255.0f);
+}
 void Ultra64::updateOutputs()
 {
     if (isPlaying)
@@ -353,8 +379,39 @@ void Ultra64::updateOutputs()
             for(uint8_t ch = 0; ch < 4; ch++)
             {
                 setGate(ch, seq.tracks[ch][currentStep].gate);
+                setCV(ch, seq.tracks[ch][currentStep].midiNum);
+            }
+        }
+        else
+        {
+            // for any channels that are currently active, check if it's time to switch the gate off
+            for(uint8_t ch = 0; ch < 4; ch++)
+            {
+                auto& step = seq.tracks[ch][currentStep];
+                if(step.gate && noteLengthMs(step.length) < msIntoStep)
+                    setGate(ch, false);
             }
         }
     }
+}
+//===================================================================================
+void Ultra64::updateDisplay()
+{
+    display->clearDisplay();
+    display->setTextSize(1);
+    display->setTextColor(SSD1306_WHITE);
+    uint8_t yPos = 0;
+    for(uint8_t idx = 3; idx >= 0; idx--)
+    {
+        display->setCursor(2, yPos);
+        display->print(log[idx]);
+        yPos += 8;
+    }
+    display->display();
+}
+
+void Ultra64::updatePixels()
+{
+    //TODO
 }
 //===================================================================================
