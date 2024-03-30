@@ -1,13 +1,13 @@
 #pragma once
+#include "Pins.h"
 #include <Adafruit_MCP23X17.h>
-#include <Adafruit_NeoPixel.h>
 #include <Adafruit_MCP4728.h>
 #include <Adafruit_SSD1306.h>
 #include <RotaryEncoder.h>
+#include <FastLED.h>
 #include <array>
 #include <Wire.h>
 #include "MCPButton.h"
-#include "Pins.h"
 #include "Sequence.h"
 
 // defaults and ranges
@@ -37,11 +37,13 @@ public:
     }
     String& operator[](uint8_t idx)
     {
-        uint8_t idx = (head + idx) % 16;
-        return messages[idx];
+        uint8_t i = (head + idx) % 16;
+        return messages[i];
     }
 
 };
+
+
 
 enum ButtonID
 {
@@ -69,7 +71,8 @@ public:
 
 private:
     // ---------- Hardware -------------
-    Adafruit_NeoPixel *pixels;
+   // Adafruit_NeoPixel *pixels;
+   CRGB pixels[24];
 
     Adafruit_SSD1306* display;
     MessageBuffer log;
@@ -144,6 +147,13 @@ private:
     void shiftStepLength(bool dir);
     //--------------------------------------
     //--------helpers for the readouts------
+    CRGB noteOnColors[12];
+    CRGB noteSelectedColors[12];
+
+    const CHSV minLengthColor;
+    const CHSV maxLengthColor;
+    const CRGB offColor;
+
     void updateDisplay();
     void updatePixels();
     //--------------------------------------

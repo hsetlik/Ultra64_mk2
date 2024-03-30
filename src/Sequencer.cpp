@@ -1,6 +1,6 @@
 #include "Sequencer.h"
 
-Ultra64::Ultra64() : pixels(nullptr),
+Ultra64::Ultra64() : // pixels(nullptr),
                      display(nullptr),
                      encA(nullptr),
                      encB(nullptr),
@@ -16,13 +16,16 @@ Ultra64::Ultra64() : pixels(nullptr),
                      c3(nullptr),
                      c4(nullptr),
                      pLeft(nullptr),
-                     pRight(nullptr)
+                     pRight(nullptr),
+                     minLengthColor(127, 127, 200),
+                     maxLengthColor(255, 127, 200),
+                     offColor(95, 150, 141)
 {
 }
 
 Ultra64::~Ultra64()
 {
-    delete pixels;
+    // delete pixels;
     delete display;
     delete encA;
     delete encB;
@@ -45,13 +48,13 @@ void Ultra64::init()
     Wire.begin(SDA, SCL);
 
     display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
-    if(!display->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+    if (!display->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
     {
         Serial.println("Error! Failed to initialize display!");
     }
     display->display();
 
-    if(!dac.begin())
+    if (!dac.begin())
     {
         Serial.println("Error! Failed to intialize DAC!");
     }
@@ -120,10 +123,20 @@ void Ultra64::init()
                        { this->buttonPressed(PR); });
     pRight->setOnHold([this]()
                       { this->buttonHeld(PR); });
-    
+
     // pixels
-    pixels = new Adafruit_NeoPixel(24, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
-    pixels->begin();
+    FastLED.addLeds<NEOPIXEL, PIXEL_PIN>(pixels, 24);
+    // now initialize our pixel colors
+    const uint8_t dHue = 256 / 12;
+    const uint8_t hueOffset = 12;
+    for (uint8_t i = 0; i < 12; i++)
+    {
+        uint8_t hue = hueOffset + (dHue * i);
+        CHSV onColor(hue, 180, 200);
+        CHSV selectedColor(hue, 220, 250);
+        hsv2rgb_rainbow(onColor, noteOnColors[i]);
+        hsv2rgb_rainbow(selectedColor, noteSelectedColors[i]);
+    }
 
     // encoders
     encA = new RotaryEncoder(ENCA_L, ENCA_R, RotaryEncoder::LatchMode::TWO03);
@@ -366,17 +379,17 @@ void Ultra64::updateOutputs()
         // first we need to keep track of time
         msIntoSequence += sampleIntervalMs;
         msIntoStep += sampleIntervalMs;
-        if(msIntoStep > stepLengthMs) // time to advance to the next step
+        if (msIntoStep > stepLengthMs) // time to advance to the next step
         {
             const uint8_t max = (quarterMode) ? 16 : 64;
             currentStep = (currentStep + 1) % max;
             msIntoStep -= stepLengthMs;
-            if(currentStep == 0)
+            if (currentStep == 0)
             {
                 msIntoSequence = msIntoStep;
             }
             // update the gates and control voltages
-            for(uint8_t ch = 0; ch < 4; ch++)
+            for (uint8_t ch = 0; ch < 4; ch++)
             {
                 setGate(ch, seq.tracks[ch][currentStep].gate);
                 setCV(ch, seq.tracks[ch][currentStep].midiNum);
@@ -385,10 +398,10 @@ void Ultra64::updateOutputs()
         else
         {
             // for any channels that are currently active, check if it's time to switch the gate off
-            for(uint8_t ch = 0; ch < 4; ch++)
+            for (uint8_t ch = 0; ch < 4; ch++)
             {
-                auto& step = seq.tracks[ch][currentStep];
-                if(step.gate && noteLengthMs(step.length) < msIntoStep)
+                auto &step = seq.tracks[ch][currentStep];
+                if (step.gate && noteLengthMs(step.length) < msIntoStep)
                     setGate(ch, false);
             }
         }
@@ -401,7 +414,7 @@ void Ultra64::updateDisplay()
     display->setTextSize(1);
     display->setTextColor(SSD1306_WHITE);
     uint8_t yPos = 0;
-    for(uint8_t idx = 3; idx >= 0; idx--)
+    for (uint8_t idx = 3; idx >= 0; idx--)
     {
         display->setCursor(2, yPos);
         display->print(log[idx]);
@@ -412,6 +425,35 @@ void Ultra64::updateDisplay()
 
 void Ultra64::updatePixels()
 {
-    //TODO
+    // step 1: render the sequence pixels
+    const uint8_t page = currentStep / 16;
+    for (uint8_t p = 0; p < 16; p++)
+    {
+        uint8_t step = (page * 16) + p;
+        auto& stepState = seq.tracks[selectedTrack][step];
+        if (!lengthMode)
+        {
+            if (step == selectedStep)
+                pixels[p] = noteSelectedColors[stepState.midiNum % 12];
+            else if (stepState.gate)
+                pixels[p] = noteOnColors[stepState.midiNum % 12];
+            else
+                pixels[p] = offColor;
+            
+        }
+        else
+        {
+            CHSV col = blend(minLengthColor, maxLengthColor, stepState.length);
+            if(step == selectedStep)
+            {
+                col.setHSV(col.hue, 250, 255);
+                hsv2rgb_rainbow(col, pixels[p]);
+            }
+            else if(stepState.gate)
+                hsv2rgb_rainbow(col, pixels[p]);
+            else
+                pixels[p] = offColor;
+        }
+    }
 }
 //===================================================================================
