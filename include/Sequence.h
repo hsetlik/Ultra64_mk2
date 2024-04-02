@@ -2,9 +2,6 @@
 #include <Arduino.h>
 #include <array>
 
-#define SEQ_LENGTH 64
-#define PG_LENGTH 16
-
 #define LENGTH_MIN 30
 
 struct Step
@@ -14,7 +11,7 @@ struct Step
     uint8_t length = 255;
 };
 
-typedef std::array<Step, SEQ_LENGTH> Track;
+typedef std::array<Step, 64> Track;
 
 struct Sequence
 {

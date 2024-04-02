@@ -1,13 +1,6 @@
 #include "Sequencer.h"
 
-Ultra64::Ultra64() : // pixels(nullptr),
-                     display(nullptr),
-                     encA(nullptr),
-                     encB(nullptr),
-                     encC(nullptr),
-                     encAPos(0),
-                     encBPos(0),
-                     encCPos(0),
+Ultra64::Ultra64() : display(nullptr),
                      encAButton(nullptr),
                      encBButton(nullptr),
                      encCButton(nullptr),
@@ -30,9 +23,6 @@ Ultra64::~Ultra64()
 {
     // delete pixels;
     delete display;
-    delete encA;
-    delete encB;
-    delete encC;
 
     delete encAButton;
     delete encBButton;
@@ -56,21 +46,6 @@ void Ultra64::init()
         Serial.println("Error! Failed to initialize display!");
     }
     display->display();
-
-    if (!dac.begin())
-    {
-        Serial.println("Error! Failed to intialize DAC!");
-    }
-
-    // set pin modes
-    pinMode(EXP_CS, OUTPUT);
-    digitalWrite(EXP_CS, HIGH);
-    // set up SPI and initialize the MCP23S17 expander
-    SPI.begin(SCK, MISO, MOSI, EXP_CS);
-    if (!exp.begin_SPI(EXP_CS, &SPI, HW_ADDR))
-    {
-        Serial.println("Error! Failed to initialize IO expander!");
-    }
 
     // buttons
     encAButton = new MCPButton(ENCA_B);
@@ -141,45 +116,38 @@ void Ultra64::init()
         hsv2rgb_rainbow(selectedColor, noteSelectedColors[i]);
     }
 
-    // encoders
-    encA = new RotaryEncoder(ENCA_L, ENCA_R, RotaryEncoder::LatchMode::TWO03);
-    encB = new RotaryEncoder(ENCB_L, ENCB_R, RotaryEncoder::LatchMode::TWO03);
-    encC = new RotaryEncoder(ENCC_L, ENCC_R, RotaryEncoder::LatchMode::TWO03);
 }
 
-void Ultra64::pollInputs()
+void Ultra64::updateInputs(uint16_t input)
 {
-    // check encoders
-    encA->tick();
-    long aPos = encA->getPosition();
-    if (aPos != encAPos)
-    {
-        encoderTurned(0, aPos < encAPos);
-        encAPos = aPos;
-    }
+    // copy the volatile input to a safe member variable
+    inputState = input;
 
-    encB->tick();
-    long bPos = encB->getPosition();
-    if (bPos != encBPos)
+    // check the encoders
+    auto aState = Input::getEncoderState(inputState, 0);
+    if(aState.moved)
     {
-        encoderTurned(1, bPos < encBPos);
-        encBPos = bPos;
+        encoderTurned(0, aState.up);
     }
-
-    encC->tick();
-    long cPos = encC->getPosition();
-    if (cPos != encCPos)
+    auto bState = Input::getEncoderState(inputState, 1);
+    if(bState.moved)
     {
-        encoderTurned(2, cPos < encCPos);
-        encCPos = cPos;
+        encoderTurned(1, bState.up);
     }
-    // check buttons
-    for (auto *b : buttons)
+    auto cState = Input::getEncoderState(inputState, 2);
+    if(cState.moved)
     {
-        b->tick();
+        encoderTurned(2, cState.up);
+    }
+    
+    // check the buttons
+    for(uint8_t b = 0; b < 9; b++)
+    {
+        ButtonID id = (ButtonID)b;
+        auto state = Input::getButtonState(inputState, id);
+        buttons[b]->updateState(state);
     }
 }
-
 
 
 //===================================================================================
@@ -377,8 +345,10 @@ float Ultra64::noteLengthMs(uint8_t length)
     const float max = stepLengthMs * 0.95f;
     return max * ((float)length / 255.0f);
 }
-void Ultra64::updateOutputs()
+
+OutputState Ultra64::getOutputs()
 {
+    OutputState state;
     if (isPlaying)
     {
         // first we need to keep track of time
@@ -396,8 +366,9 @@ void Ultra64::updateOutputs()
             // update the gates and control voltages
             for (uint8_t ch = 0; ch < 4; ch++)
             {
-                setGate(ch, seq.tracks[ch][currentStep].gate);
-                setCV(ch, seq.tracks[ch][currentStep].midiNum);
+                state[ch].gate = seq.tracks[ch][currentStep].gate;
+                uint16_t val = (uint16_t)((float)seq.tracks[ch][currentStep].midiNum * HALFSTEP_INCREMENT);
+                state[ch].dacValue = val;
             }
         }
         else
@@ -407,10 +378,11 @@ void Ultra64::updateOutputs()
             {
                 auto &step = seq.tracks[ch][currentStep];
                 if (step.gate && noteLengthMs(step.length) < msIntoStep)
-                    setGate(ch, false);
+                    state[ch].gate = false;
             }
         }
     }
+    return state;
 }
 //===================================================================================
 void Ultra64::updateDisplay()

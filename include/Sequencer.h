@@ -59,10 +59,9 @@ public:
     // call this in setup() to allocate everything and do setup stuff
     void init();
     // check the encoders and buttons, call this on a timer interrupt
-    void pollInputs();
-    void updateInputs(InputState& state);
-    // update the DAC and the gate outputs for the current state of the sequence, this also gets a timer interrupt at OUTPUT_UPDATE_HZ
-    void updateOutputs();
+    void updateInputs(uint16_t data);
+    //get the output state to update as needed in the ISR
+    OutputState getOutputs();
     // call this in loop() in main.cpp. Handles updates to the pixels and display
     void tickReadouts();
 
@@ -73,13 +72,6 @@ private:
 
     Adafruit_SSD1306* display;
     MessageBuffer log;
-
-    RotaryEncoder *encA;
-    RotaryEncoder *encB;
-    RotaryEncoder *encC;
-    long encAPos;
-    long encBPos;
-    long encCPos;
 
     Adafruit_MCP23X17 exp;
 
@@ -94,7 +86,9 @@ private:
     MCPButton *pRight;
     std::array<MCPButton *, 9> buttons = {encAButton, encBButton, encCButton, c1, c2, c3, c4, pLeft, pRight};
 
-    Adafruit_MCP4728 dac;
+
+    // this is used to safely store the data from the volatile variable that the ISR updates
+    uint16_t inputState = 0;
     //keep track of when we update the pixels and display
     unsigned long lastDisplayUpdate;
     unsigned long lastPixelUpdate;
@@ -119,11 +113,7 @@ private:
             break;
         }
     }
-    void setCV(uint8_t channel, uint8_t midiNote)
-    {
-        uint16_t value = (uint16_t)((float)midiNote * HALFSTEP_INCREMENT);
-        dac.setChannelValue((MCP4728_channel_t)channel, value, MCP4728_VREF_INTERNAL);
-    }
+
     //--------------------------------------
     // ---------- State Variables ----------
     uint16_t currentTempo = TEMPO_DEFAULT;
