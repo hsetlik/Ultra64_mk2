@@ -9,6 +9,10 @@
 #include <Wire.h>
 #include "MCPButton.h"
 #include "Sequence.h"
+#include "InputState.h"
+
+#define PIXEL_INTERVAL 50
+#define DISPLAY_INTERVAL 41
 
 // defaults and ranges
 #define TEMPO_DEFAULT 120
@@ -16,6 +20,7 @@
 #define TEMPO_MAX 360
 
 #define OUTPUT_UPDATE_HZ 1000
+#define INPUT_POLLING_HZ 850
 
 #define HALFSTEP_INCREMENT 26.167f
 
@@ -45,18 +50,7 @@ public:
 
 
 
-enum ButtonID
-{
-    EncA,
-    EncB,
-    EncC,
-    C1,
-    C2,
-    C3,
-    C4,
-    PL,
-    PR
-};
+
 class Ultra64
 {
 public:
@@ -66,8 +60,11 @@ public:
     void init();
     // check the encoders and buttons, call this on a timer interrupt
     void pollInputs();
+    void updateInputs(InputState& state);
     // update the DAC and the gate outputs for the current state of the sequence, this also gets a timer interrupt at OUTPUT_UPDATE_HZ
     void updateOutputs();
+    // call this in loop() in main.cpp. Handles updates to the pixels and display
+    void tickReadouts();
 
 private:
     // ---------- Hardware -------------
@@ -98,6 +95,9 @@ private:
     std::array<MCPButton *, 9> buttons = {encAButton, encBButton, encCButton, c1, c2, c3, c4, pLeft, pRight};
 
     Adafruit_MCP4728 dac;
+    //keep track of when we update the pixels and display
+    unsigned long lastDisplayUpdate;
+    unsigned long lastPixelUpdate;
     // helper function for the gate outputs
     void setGate(uint8_t channel, bool level)
     {
@@ -153,6 +153,8 @@ private:
     const CHSV minLengthColor;
     const CHSV maxLengthColor;
     const CRGB offColor;
+    const CRGB onColor;
+
 
     void updateDisplay();
     void updatePixels();

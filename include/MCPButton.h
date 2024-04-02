@@ -8,7 +8,6 @@ class MCPButton
 {
 private:
     const uint8_t pin;
-    Adafruit_MCP23X17* const mcp;
     // keep track of the state of the button for debouncing and fancy types of presses and stuff
     bool prevState;
     unsigned long ticksSinceChange;
@@ -20,7 +19,9 @@ private:
     std::function<void()> onPress;
     std::function<void()> onHold;
 public:
-    MCPButton(uint8_t pin, Adafruit_MCP23X17* exp);
+    MCPButton(uint8_t pin);
+    // alternate option to pull this out to the ISRs
+    void updateState(bool pressed);
     void tick();
 
     void setOnPress(std::function<void()> func)

@@ -1,8 +1,7 @@
 #include "MCPButton.h"
 
-MCPButton::MCPButton(uint8_t p, Adafruit_MCP23X17* exp) :
+MCPButton::MCPButton(uint8_t p) :
 pin(p),
-mcp(exp),
 prevState(true),
 ticksSinceChange(0),
 onPressSet(false),
@@ -14,7 +13,7 @@ holdLatch(false)
 
 void MCPButton::tick()
 {
-    bool currentState = mcp->digitalRead(pin);
+    bool currentState = false;
     if(currentState != prevState)
     {
         // check for releasing a short press
@@ -35,4 +34,9 @@ void MCPButton::tick()
             holdLatch = true;
         }
     }
+}
+
+void MCPButton::updateState(bool currentState)
+{
+
 }
