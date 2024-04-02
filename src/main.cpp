@@ -18,8 +18,8 @@ volatile uint16_t inputState;
 volatile bool newInputsReady = false;
 
 // vars for the output ISR 
-volatile OutputState prevOutputState;
-volatile OutputState currentOutputState;
+
+volatile uint64_t prevOutputs;
 volatile bool needsNewOutputs = false;
 
 //hardware timers for our two ISRs
@@ -57,6 +57,7 @@ void ARDUINO_ISR_ATTR inputISR()
     Input::addEncoderState(is, 2, cPos < encCPos);
   }
 
+
   // buttons
   Input::setButtonState(is, EncA, exp.digitalRead(ENCA_B));
   Input::setButtonState(is, EncB, exp.digitalRead(ENCB_B));
@@ -75,7 +76,14 @@ void ARDUINO_ISR_ATTR inputISR()
 
 void ARDUINO_ISR_ATTR outputISR()
 {
+  portENTER_CRITICAL_ISR(&timerMux);
+  // grip the new values
+  uint64_t currentOutputs = seq.getOutputState();
+  if(currentOutputs != prevOutputs)
+  {
 
+  }
+  portEXIT_CRITICAL_ISR(&timerMux);
 }
 //===============================================================
 

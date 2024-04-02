@@ -384,6 +384,44 @@ OutputState Ultra64::getOutputs()
     }
     return state;
 }
+
+uint64_t Ultra64::getOutputState()
+{
+    uint64_t state = 0;
+     if (isPlaying)
+    {
+        // first we need to keep track of time
+        msIntoSequence += sampleIntervalMs;
+        msIntoStep += sampleIntervalMs;
+        if (msIntoStep > stepLengthMs) // time to advance to the next step
+        {
+            const uint8_t max = (quarterMode) ? 16 : 64;
+            currentStep = (currentStep + 1) % max;
+            msIntoStep -= stepLengthMs;
+            if (currentStep == 0)
+            {
+                msIntoSequence = msIntoStep;
+            }
+            // update the gates and control voltages
+            for (uint8_t ch = 0; ch < 4; ch++)
+            {
+                Output::setGate(state, ch, seq.tracks[ch][currentStep].gate);
+                uint16_t val = (uint16_t)((float)seq.tracks[ch][currentStep].midiNum * HALFSTEP_INCREMENT);
+                Output::setDacValue(state, ch, val);
+            }
+        }
+        else
+        {
+            // for any channels that are currently active, check if it's time to switch the gate off
+            for (uint8_t ch = 0; ch < 4; ch++)
+            {
+                auto &step = seq.tracks[ch][currentStep];
+                if (step.gate && noteLengthMs(step.length) < msIntoStep)
+                    Output::setGate(state, ch, false);
+            }
+        }
+    }   
+}
 //===================================================================================
 void Ultra64::updateDisplay()
 {

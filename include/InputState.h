@@ -21,36 +21,6 @@ struct EncoderState
     bool moved = false;
     bool up = false;
 };
-class InputState
-{
-private:
-    uint16_t data;
-public:
-    InputState();
-    InputState(const InputState& other)
-    {
-        data = other.data;
-    }
-
-    void operator=(InputState& other)
-    {
-        data = other.data;
-    }
-    
-    void operator=(uint16_t val)
-    {
-        data = val;
-    }
-
-    void init() {data = 0;}
-    void addEncoderState(uint8_t enc, bool up);
-    void setButtonState(ButtonID button, bool state);
-
-    //OUTPUTS- these run the callbacks in Sequencer.cpp
-    EncoderState getEncoderState(uint8_t enc);
-    bool getButtonState(ButtonID button);
-};
-
 namespace Input
 {
     // INPUTS- these get called from the ISRs
@@ -72,3 +42,14 @@ struct TrackState
 };
 
 typedef std::array<TrackState, 4> OutputState;
+
+//======================================================
+
+namespace Output
+{
+    void setDacValue(uint64_t& data, uint8_t track, uint16_t dacVal);
+    void setGate(uint64_t& data, uint8_t track, bool gate);
+    //=======================
+    uint16_t getDacValue(uint64_t& data, uint8_t track);
+    bool getGateValue(uint64_t & data, uint8_t track);
+}

@@ -62,6 +62,7 @@ public:
     void updateInputs(uint16_t data);
     //get the output state to update as needed in the ISR
     OutputState getOutputs();
+    uint64_t getOutputState();
     // call this in loop() in main.cpp. Handles updates to the pixels and display
     void tickReadouts();
 
