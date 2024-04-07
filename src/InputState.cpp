@@ -45,14 +45,14 @@ void Output::setGate(uint64_t& data, uint8_t track, bool gate)
     data = gate ? data | mask : data & ~mask;
 }
 
-uint16_t Output::getDacValue(uint64_t& data, uint8_t track)
+uint16_t Output::getDacValue(volatile uint64_t& data, uint8_t track)
 {
     uint16_t value = (uint16_t)(data >> (track * 16));
     uint16_t mask = 1 << 14;
     return value & ~mask;
 }
 
-bool Output::getGateValue(uint64_t & data, uint8_t track)
+bool Output::getGateValue(volatile uint64_t & data, uint8_t track)
 {
     uint64_t pos = (uint64_t)(track * 16) + 14;
     return data & (1 << pos);

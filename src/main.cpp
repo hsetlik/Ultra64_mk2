@@ -1,5 +1,6 @@
 #include "Sequencer.h"
-
+#include "esp_system.h"
+#include "rom/ets_sys.h"
 //
 Ultra64 seq;
 
@@ -7,7 +8,7 @@ RotaryEncoder encA(ENCA_L, ENCA_R, RotaryEncoder::LatchMode::TWO03);
 RotaryEncoder encB(ENCB_L, ENCB_R, RotaryEncoder::LatchMode::TWO03);
 RotaryEncoder encC(ENCC_L, ENCC_R, RotaryEncoder::LatchMode::TWO03);
 
-Adafruit_MCP23X17 exp;
+Adafruit_MCP23X17 expander;
 Adafruit_MCP4728 dac;
 
 // Volatile vars for the input ISR
@@ -20,6 +21,7 @@ volatile bool newInputsReady = false;
 // vars for the output ISR 
 
 volatile uint64_t prevOutputs;
+volatile uint64_t currentOutputs;
 volatile bool needsNewOutputs = false;
 
 //hardware timers for our two ISRs
@@ -59,32 +61,38 @@ void ARDUINO_ISR_ATTR inputISR()
 
 
   // buttons
-  Input::setButtonState(is, EncA, exp.digitalRead(ENCA_B));
-  Input::setButtonState(is, EncB, exp.digitalRead(ENCB_B));
-  Input::setButtonState(is, EncC, exp.digitalRead(ENCC_B));
-  Input::setButtonState(is, C1, exp.digitalRead(CH1));
-  Input::setButtonState(is, C2, exp.digitalRead(CH2));
-  Input::setButtonState(is, C3, exp.digitalRead(CH3));
-  Input::setButtonState(is, C4, exp.digitalRead(CH4));
-  Input::setButtonState(is, EncC, exp.digitalRead(ENCC_B));
-  Input::setButtonState(is, EncC, exp.digitalRead(ENCC_B));
+  Input::setButtonState(is, EncA, expander.digitalRead(ENCA_B));
+  Input::setButtonState(is, EncB, expander.digitalRead(ENCB_B));
+  Input::setButtonState(is, EncC, expander.digitalRead(ENCC_B));
+  Input::setButtonState(is, C1, expander.digitalRead(CH1));
+  Input::setButtonState(is, C2, expander.digitalRead(CH2));
+  Input::setButtonState(is, C3, expander.digitalRead(CH3));
+  Input::setButtonState(is, C4, expander.digitalRead(CH4));
+  Input::setButtonState(is, EncC, expander.digitalRead(ENCC_B));
+  Input::setButtonState(is, EncC, expander.digitalRead(ENCC_B));
 
   inputState = is;
   newInputsReady = true;
   portEXIT_CRITICAL_ISR(&timerMux);
 }
 
-void ARDUINO_ISR_ATTR outputISR()
-{
-  portENTER_CRITICAL_ISR(&timerMux);
-  // grip the new values
-  uint64_t currentOutputs = seq.getOutputState();
-  if(currentOutputs != prevOutputs)
-  {
+// void ARDUINO_ISR_ATTR outputISR()
+// {
+//   portENTER_CRITICAL_ISR(&timerMux);
+//   // grip the new values
+//   if(currentOutputs != prevOutputs)
+//   {
+//     for(uint8_t ch = 0; ch < 4; ch++)
+//     {
+//       if(Output::getDacValue(prevOutputs, ch) != Output::getDacValue(currentOutputs, ch))
+//       {
 
-  }
-  portEXIT_CRITICAL_ISR(&timerMux);
-}
+//       }
+//     }
+
+//   }
+//   portEXIT_CRITICAL_ISR(&timerMux);
+// }
 //===============================================================
 
 void setup()
@@ -93,12 +101,13 @@ void setup()
   Serial.begin(115200);
   // initialize sequencer
   seq.init();
+  seq.pushMessage("Seq. Initialized!");
   // set pin modes
   pinMode(EXP_CS, OUTPUT);
   digitalWrite(EXP_CS, HIGH);
   // set up SPI and initialize the MCP23S17 expander
   SPI.begin(SCK, MISO, MOSI, EXP_CS);
-  if (!exp.begin_SPI(EXP_CS, &SPI, HW_ADDR))
+  if (!expander.begin_SPI(EXP_CS, &SPI, HW_ADDR))
   {
     Serial.println("Error! Failed to initialize IO expander!");
   }
@@ -107,6 +116,14 @@ void setup()
   {
     Serial.println("Failed to initialize DAC!");
   }
+
+  //set up hardware timers and interrupts
+  inTimer = timerBegin(0, 80, true);
+  timerAttachInterrupt(inTimer, &inputISR, true);
+  timerAlarmWrite(inTimer, 1000000 / INPUT_POLLING_HZ, true);
+  timerAlarmEnable(inTimer);
+  Serial.println("Attached input interrupt");
+
 
 }
 

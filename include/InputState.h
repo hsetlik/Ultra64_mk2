@@ -50,6 +50,6 @@ namespace Output
     void setDacValue(uint64_t& data, uint8_t track, uint16_t dacVal);
     void setGate(uint64_t& data, uint8_t track, bool gate);
     //=======================
-    uint16_t getDacValue(uint64_t& data, uint8_t track);
-    bool getGateValue(uint64_t & data, uint8_t track);
+    uint16_t getDacValue(volatile uint64_t& data, uint8_t track);
+    bool getGateValue(volatile uint64_t & data, uint8_t track);
 }

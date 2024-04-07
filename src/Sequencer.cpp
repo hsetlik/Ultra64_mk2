@@ -41,11 +41,16 @@ void Ultra64::init()
     Wire.begin(SDA, SCL);
 
     display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
-    if (!display->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+    if(!display->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
     {
         Serial.println("Error! Failed to initialize display!");
     }
     display->display();
+    // pixels
+    FastLED.addLeds<NEOPIXEL, PIXEL_PIN>(pixels, 24);
+    FastLED.setBrightness(100);
+    FastLED.show();
+    delay(1000);
 
     // buttons
     encAButton = new MCPButton(ENCA_B);
@@ -102,8 +107,7 @@ void Ultra64::init()
     pRight->setOnHold([this]()
                       { this->buttonHeld(PR); });
 
-    // pixels
-    FastLED.addLeds<NEOPIXEL, PIXEL_PIN>(pixels, 24);
+
     // now initialize our pixel colors
     const uint8_t dHue = 256 / 12;
     const uint8_t hueOffset = 12;

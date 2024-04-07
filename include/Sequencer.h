@@ -65,6 +65,10 @@ public:
     uint64_t getOutputState();
     // call this in loop() in main.cpp. Handles updates to the pixels and display
     void tickReadouts();
+    void pushMessage(const String& msg)
+    {
+        log.push(msg);
+    }
 
 private:
     // ---------- Hardware -------------
@@ -74,7 +78,7 @@ private:
     Adafruit_SSD1306* display;
     MessageBuffer log;
 
-    Adafruit_MCP23X17 exp;
+    Adafruit_MCP23X17 expander;
 
     MCPButton *encAButton;
     MCPButton *encBButton;
@@ -99,16 +103,16 @@ private:
         switch (channel)
         {
         case 0:
-            exp.digitalWrite(CH1, !level);
+            expander.digitalWrite(CH1, !level);
             break;
         case 1:
-            exp.digitalWrite(CH2, !level);
+            expander.digitalWrite(CH2, !level);
             break;
         case 2:
-            exp.digitalWrite(CH3, !level);
+            expander.digitalWrite(CH3, !level);
             break;
         case 3:
-            exp.digitalWrite(CH4, !level);
+            expander.digitalWrite(CH4, !level);
             break;
         default:
             break;
