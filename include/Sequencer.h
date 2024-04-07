@@ -78,8 +78,6 @@ private:
     Adafruit_SSD1306* display;
     MessageBuffer log;
 
-    Adafruit_MCP23X17 expander;
-
     MCPButton *encAButton;
     MCPButton *encBButton;
     MCPButton *encCButton;
@@ -98,27 +96,6 @@ private:
     unsigned long lastDisplayUpdate;
     unsigned long lastPixelUpdate;
     // helper function for the gate outputs
-    void setGate(uint8_t channel, bool level)
-    {
-        switch (channel)
-        {
-        case 0:
-            expander.digitalWrite(CH1, !level);
-            break;
-        case 1:
-            expander.digitalWrite(CH2, !level);
-            break;
-        case 2:
-            expander.digitalWrite(CH3, !level);
-            break;
-        case 3:
-            expander.digitalWrite(CH4, !level);
-            break;
-        default:
-            break;
-        }
-    }
-
     //--------------------------------------
     // ---------- State Variables ----------
     uint16_t currentTempo = TEMPO_DEFAULT;

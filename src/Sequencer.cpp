@@ -15,7 +15,7 @@ Ultra64::Ultra64() : display(nullptr),
                      minLengthColor(127, 127, 200),
                      maxLengthColor(255, 127, 200),
                      offColor(95, 150, 141),
-                     onColor(233, 139, 34)
+                     onColor(20, 20, 34)
 {
 }
 
@@ -38,15 +38,30 @@ Ultra64::~Ultra64()
 void Ultra64::init()
 {
     // initialize i2c and DAC
-    Wire.begin(SDA, SCL);
+    Wire.begin(SDA, SCL, 200000);
 
     display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
     if(!display->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
     {
         Serial.println("Error! Failed to initialize display!");
     }
+    display->clearDisplay();
+    display->setRotation(2);
+    display->setCursor(2, 0);
+    display->setTextColor(SSD1306_WHITE);
+    display->println("Initializing. . .");
     display->display();
+    delay(1000);
     // pixels
+    // set sum default colors
+    const uint8_t pHue = 255 / 24;
+    const uint8_t hOffset = 10;
+    for(uint8_t p = 0; p < 24; p++)
+    {
+        uint8_t hue = hOffset + (p * pHue);
+        CHSV color(hue, 180, 200);
+        hsv2rgb_rainbow(color, pixels[p]);
+    }
     FastLED.addLeds<NEOPIXEL, PIXEL_PIN>(pixels, 24);
     FastLED.setBrightness(100);
     FastLED.show();
@@ -425,6 +440,7 @@ uint64_t Ultra64::getOutputState()
             }
         }
     }   
+    return state;
 }
 //===================================================================================
 void Ultra64::updateDisplay()
