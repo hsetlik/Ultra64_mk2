@@ -87,7 +87,10 @@ void ARDUINO_ISR_ATTR inputISR()
 void ARDUINO_ISR_ATTR outputISR()
 {
   portENTER_CRITICAL_ISR(&timerMux2);
-  // grip the new values
+  
+  // packing all the output data into one 64 bit
+  // variable lets us check if we need to update
+  // anything with just one equality check
   if(currentOutputs != prevOutputs)
   {
     for(uint8_t ch = 0; ch < 4; ch++)
@@ -171,6 +174,10 @@ void setup()
   {
     Serial.println("Failed to initialize DAC!");
   }
+  else
+  {
+    Serial.println("DAC Initialized!");
+  }
 
   //set up hardware timers and interrupts
   inTimer = timerBegin(0, 80, true);
@@ -178,7 +185,7 @@ void setup()
   timerAlarmWrite(inTimer, 1000000 / INPUT_POLLING_HZ, true);
   timerAlarmEnable(inTimer);
   Serial.println("Attached input interrupt");
-  seq.pushMessage("Attached input interrupt");
+  //seq.pushMessage("Attached input interrupt");
 
   // now the output timer
   outTimer = timerBegin(1, 80, true);
@@ -186,7 +193,7 @@ void setup()
   timerAlarmWrite(outTimer, 1000000 / OUTPUT_UPDATE_HZ, true);
   timerAlarmEnable(outTimer);
   Serial.println("Attached output interrupt");
-  seq.pushMessage("Attached output interrupt");
+  //seq.pushMessage("Attached output interrupt");
 }
 
 void loop()

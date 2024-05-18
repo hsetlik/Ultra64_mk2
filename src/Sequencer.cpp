@@ -68,60 +68,66 @@ void Ultra64::init()
     delay(1000);
 
     // buttons
-    encAButton = new MCPButton(ENCA_B);
-    encAButton->setOnPress([this]()
-                           { this->buttonPressed(EncA); });
-    encAButton->setOnHold([this]()
-                          { this->buttonHeld(EncA); });
+    // encAButton = new MCPButton(ENCA_B);
+    // encAButton->setOnPress([this]()
+    //                        { this->buttonPressed(EncA); });
+    // encAButton->setOnHold([this]()
+    //                       { this->buttonHeld(EncA); });
 
-    encBButton = new MCPButton(ENCB_B);
-    encBButton->setOnPress([this]()
-                           { this->buttonPressed(EncB); });
-    encBButton->setOnHold([this]()
-                          { this->buttonHeld(EncB); });
+    // encBButton = new MCPButton(ENCB_B);
+    // encBButton->setOnPress([this]()
+    //                        { this->buttonPressed(EncB); });
+    // encBButton->setOnHold([this]()
+    //                       { this->buttonHeld(EncB); });
 
-    encCButton = new MCPButton(ENCC_B);
-    encCButton->setOnPress([this]()
-                           { this->buttonPressed(EncC); });
-    encCButton->setOnHold([this]()
-                          { this->buttonHeld(EncC); });
+    // encCButton = new MCPButton(ENCC_B);
+    // encCButton->setOnPress([this]()
+    //                        { this->buttonPressed(EncC); });
+    // encCButton->setOnHold([this]()
+    //                       { this->buttonHeld(EncC); });
 
-    c1 = new MCPButton(CH1);
-    c1->setOnPress([this]()
-                   { this->buttonPressed(C1); });
-    c1->setOnHold([this]()
-                  { this->buttonHeld(C1); });
+    // c1 = new MCPButton(CH1);
+    // c1->setOnPress([this]()
+    //                { this->buttonPressed(C1); });
+    // c1->setOnHold([this]()
+    //               { this->buttonHeld(C1); });
 
-    c2 = new MCPButton(CH2);
-    c2->setOnPress([this]()
-                   { this->buttonPressed(C2); });
-    c2->setOnHold([this]()
-                  { this->buttonHeld(C2); });
+    // c2 = new MCPButton(CH2);
+    // c2->setOnPress([this]()
+    //                { this->buttonPressed(C2); });
+    // c2->setOnHold([this]()
+    //               { this->buttonHeld(C2); });
 
-    c3 = new MCPButton(CH3);
-    c3->setOnPress([this]()
-                   { this->buttonPressed(C3); });
-    c3->setOnHold([this]()
-                  { this->buttonHeld(C3); });
+    // c3 = new MCPButton(CH3);
+    // c3->setOnPress([this]()
+    //                { this->buttonPressed(C3); });
+    // c3->setOnHold([this]()
+    //               { this->buttonHeld(C3); });
 
-    c4 = new MCPButton(CH4);
-    c4->setOnPress([this]()
-                   { this->buttonPressed(C4); });
-    c4->setOnHold([this]()
-                  { this->buttonHeld(C4); });
+    // c4 = new MCPButton(CH4);
+    // c4->setOnPress([this]()
+    //                { this->buttonPressed(C4); });
+    // c4->setOnHold([this]()
+    //               { this->buttonHeld(C4); });
 
-    pLeft = new MCPButton(P_LEFT);
-    pLeft->setOnPress([this]()
-                      { this->buttonPressed(PL); });
-    pLeft->setOnHold([this]()
-                     { this->buttonHeld(PL); });
+    // pLeft = new MCPButton(P_LEFT);
+    // pLeft->setOnPress([this]()
+    //                   { this->buttonPressed(PL); });
+    // pLeft->setOnHold([this]()
+    //                  { this->buttonHeld(PL); });
 
-    pRight = new MCPButton(P_RIGHT);
-    pRight->setOnPress([this]()
-                       { this->buttonPressed(PR); });
-    pRight->setOnHold([this]()
-                      { this->buttonHeld(PR); });
+    // pRight = new MCPButton(P_RIGHT);
+    // pRight->setOnPress([this]()
+    //                    { this->buttonPressed(PR); });
+    // pRight->setOnHold([this]()
+    //                   { this->buttonHeld(PR); });
 
+    for(uint8_t b = 0; b < 9; b++)
+    {
+        ButtonID id = (ButtonID)b;
+        buttons[b].attachOnClick([this, id](){ this->buttonPressed(id); });
+        buttons[b].attachDuringPress([this, id](){this->buttonHeld(id);});
+    }
 
     // now initialize our pixel colors
     const uint8_t dHue = 256 / 12;
@@ -139,7 +145,6 @@ void Ultra64::init()
 
 void Ultra64::updateInputs(uint16_t input)
 {
-    // copy the volatile input to a safe member variable
     inputState = input;
 
     // check the encoders
@@ -164,7 +169,7 @@ void Ultra64::updateInputs(uint16_t input)
     {
         ButtonID id = (ButtonID)b;
         auto state = Input::getButtonState(inputState, id);
-        buttons[b]->updateState(state);
+        buttons[b].tick(state);
     }
 }
 

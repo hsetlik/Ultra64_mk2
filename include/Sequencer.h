@@ -8,6 +8,7 @@
 #include <array>
 #include <Wire.h>
 #include "MCPButton.h"
+#include "Button.h"
 #include "Sequence.h"
 #include "InputState.h"
 
@@ -87,7 +88,10 @@ private:
     MCPButton *c4;
     MCPButton *pLeft;
     MCPButton *pRight;
-    std::array<MCPButton *, 9> buttons = {encAButton, encBButton, encCButton, c1, c2, c3, c4, pLeft, pRight};
+    std::array<MCPButton *, 9> mcpButtons = {encAButton, encBButton, encCButton, c1, c2, c3, c4, pLeft, pRight};
+
+    //new button stuff
+    Button buttons[9];
 
 
     // this is used to safely store the data from the volatile variable that the ISR updates
