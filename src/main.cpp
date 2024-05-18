@@ -62,6 +62,7 @@ void ARDUINO_ISR_ATTR inputISR()
 
 
   // buttons
+  
   Input::setButtonState(is, EncA, expander.digitalRead(ENCA_B));
   Input::setButtonState(is, EncB, expander.digitalRead(ENCB_B));
   Input::setButtonState(is, EncC, expander.digitalRead(ENCC_B));

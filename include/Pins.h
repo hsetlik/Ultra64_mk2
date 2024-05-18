@@ -1,23 +1,21 @@
 #pragma once
 #include <Arduino.h>
 
-
 // SPI
 #define SCK 14
 #define MOSI 13
 #define MISO 12
-#define EXP_CS 2
-#define EXP_RST 7
+#define EXP_CS 21
+#define EXP_RST 9
 #define HW_ADDR 0b110
 
 // I2C
-#define SDA 17
-#define SCL 18
-#define DAC_RDY 8
-#define LDAC 9
+#define SDA 18
+#define SCL 17
+#define LDAC 8
 
 // Pixels
-#define PIXEL_PIN 21
+#define PIXEL_PIN 39
 
 // Rotary Encoders
 #define ENCA_L 4
@@ -32,19 +30,37 @@
 //==========================================================
 // MCP23S17 I/O Expander pins
 
-#define ENCA_B 8
-#define ENCB_B 9
-#define ENCC_B 10
-
-#define CH1 13
-#define CH2 14
-#define CH3 15
-#define CH4 0
-
-#define GATE1 2
-#define GATE2 3
-#define GATE3 4
-#define GATE4 5
-
+#define CH1 2
+#define CH2 3
+#define CH3 4
+#define CH4 5
 #define P_LEFT 6
 #define P_RIGHT 7
+
+#define GATE1 8
+#define GATE2 9
+#define GATE3 10
+#define GATE4 11
+#define ENCA_B 12
+#define ENCB_B 13
+#define ENCC_B 14
+
+// port A bit indeces
+
+#define CH1_BIT 2
+#define CH2_BIT 3
+#define CH3_BIT 4
+#define CH4_BIT 5
+#define P_LEFT_BIT 6
+#define P_RIGHT_BIT 7
+
+// port B bit indeces
+
+#define GATE1_BIT 0
+#define GATE2_BIT 1
+#define GATE3_BIT 2
+#define GATE4_BIT 3
+#define ENCC_BIT 4
+#define ENCB_BIT 5
+#define ENCA_BIT 6
+
