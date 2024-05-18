@@ -7,7 +7,6 @@
 #include <FastLED.h>
 #include <array>
 #include <Wire.h>
-#include "MCPButton.h"
 #include "Button.h"
 #include "Sequence.h"
 #include "InputState.h"
@@ -78,17 +77,6 @@ private:
 
     Adafruit_SSD1306* display;
     MessageBuffer log;
-
-    MCPButton *encAButton;
-    MCPButton *encBButton;
-    MCPButton *encCButton;
-    MCPButton *c1;
-    MCPButton *c2;
-    MCPButton *c3;
-    MCPButton *c4;
-    MCPButton *pLeft;
-    MCPButton *pRight;
-    std::array<MCPButton *, 9> mcpButtons = {encAButton, encBButton, encCButton, c1, c2, c3, c4, pLeft, pRight};
 
     //new button stuff
     Button buttons[9];

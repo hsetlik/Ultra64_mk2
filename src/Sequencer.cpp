@@ -1,15 +1,6 @@
 #include "Sequencer.h"
 
 Ultra64::Ultra64() : display(nullptr),
-                     encAButton(nullptr),
-                     encBButton(nullptr),
-                     encCButton(nullptr),
-                     c1(nullptr),
-                     c2(nullptr),
-                     c3(nullptr),
-                     c4(nullptr),
-                     pLeft(nullptr),
-                     pRight(nullptr),
                      lastDisplayUpdate(0),
                      lastPixelUpdate(0),
                      minLengthColor(127, 127, 200),
@@ -23,16 +14,6 @@ Ultra64::~Ultra64()
 {
     // delete pixels;
     delete display;
-
-    delete encAButton;
-    delete encBButton;
-    delete encCButton;
-    delete c1;
-    delete c2;
-    delete c3;
-    delete c4;
-    delete pLeft;
-    delete pRight;
 }
 
 void Ultra64::init()
@@ -66,61 +47,6 @@ void Ultra64::init()
     FastLED.setBrightness(100);
     FastLED.show();
     delay(1000);
-
-    // buttons
-    // encAButton = new MCPButton(ENCA_B);
-    // encAButton->setOnPress([this]()
-    //                        { this->buttonPressed(EncA); });
-    // encAButton->setOnHold([this]()
-    //                       { this->buttonHeld(EncA); });
-
-    // encBButton = new MCPButton(ENCB_B);
-    // encBButton->setOnPress([this]()
-    //                        { this->buttonPressed(EncB); });
-    // encBButton->setOnHold([this]()
-    //                       { this->buttonHeld(EncB); });
-
-    // encCButton = new MCPButton(ENCC_B);
-    // encCButton->setOnPress([this]()
-    //                        { this->buttonPressed(EncC); });
-    // encCButton->setOnHold([this]()
-    //                       { this->buttonHeld(EncC); });
-
-    // c1 = new MCPButton(CH1);
-    // c1->setOnPress([this]()
-    //                { this->buttonPressed(C1); });
-    // c1->setOnHold([this]()
-    //               { this->buttonHeld(C1); });
-
-    // c2 = new MCPButton(CH2);
-    // c2->setOnPress([this]()
-    //                { this->buttonPressed(C2); });
-    // c2->setOnHold([this]()
-    //               { this->buttonHeld(C2); });
-
-    // c3 = new MCPButton(CH3);
-    // c3->setOnPress([this]()
-    //                { this->buttonPressed(C3); });
-    // c3->setOnHold([this]()
-    //               { this->buttonHeld(C3); });
-
-    // c4 = new MCPButton(CH4);
-    // c4->setOnPress([this]()
-    //                { this->buttonPressed(C4); });
-    // c4->setOnHold([this]()
-    //               { this->buttonHeld(C4); });
-
-    // pLeft = new MCPButton(P_LEFT);
-    // pLeft->setOnPress([this]()
-    //                   { this->buttonPressed(PL); });
-    // pLeft->setOnHold([this]()
-    //                  { this->buttonHeld(PL); });
-
-    // pRight = new MCPButton(P_RIGHT);
-    // pRight->setOnPress([this]()
-    //                    { this->buttonPressed(PR); });
-    // pRight->setOnHold([this]()
-    //                   { this->buttonHeld(PR); });
 
     for(uint8_t b = 0; b < 9; b++)
     {
