@@ -44,6 +44,7 @@ void ARDUINO_ISR_ATTR inputISR()
   if(aPos != encAPos)
   {
     Input::addEncoderState(is, 0, aPos < encAPos);
+    encAPos = aPos;
   }
 
   encB.tick();
@@ -51,6 +52,7 @@ void ARDUINO_ISR_ATTR inputISR()
   if(bPos != encBPos)
   {
     Input::addEncoderState(is, 1, bPos < encBPos);
+    encBPos = bPos;
   }
 
   encC.tick();
@@ -58,20 +60,24 @@ void ARDUINO_ISR_ATTR inputISR()
   if(cPos != encCPos)
   {
     Input::addEncoderState(is, 2, cPos < encCPos);
+    encCPos = cPos;
   }
 
 
   // buttons
+  uint8_t bitsA = expander.readGPIOA();
+  uint8_t bitsB = expander.readGPIOB();
   
-  Input::setButtonState(is, EncA, expander.digitalRead(ENCA_B));
-  Input::setButtonState(is, EncB, expander.digitalRead(ENCB_B));
-  Input::setButtonState(is, EncC, expander.digitalRead(ENCC_B));
-  Input::setButtonState(is, C1, expander.digitalRead(CH1));
-  Input::setButtonState(is, C2, expander.digitalRead(CH2));
-  Input::setButtonState(is, C3, expander.digitalRead(CH3));
-  Input::setButtonState(is, C4, expander.digitalRead(CH4));
-  Input::setButtonState(is, EncC, expander.digitalRead(ENCC_B));
-  Input::setButtonState(is, EncC, expander.digitalRead(ENCC_B));
+  Input::setButtonState(is, EncA, bitsB & (1 << ENCA_BIT));
+  Input::setButtonState(is, EncB, bitsB & (1 << ENCB_BIT));
+  Input::setButtonState(is, EncC, bitsB & (1 << ENCC_BIT));
+
+  Input::setButtonState(is, C1, bitsA & (1 << CH1_BIT));
+  Input::setButtonState(is, C2, bitsA & (1 << CH2_BIT));
+  Input::setButtonState(is, C3, bitsA & (1 << CH3_BIT));
+  Input::setButtonState(is, C4, bitsA & (1 << CH4_BIT));
+  Input::setButtonState(is, PL, bitsA & (1 << P_LEFT_BIT));
+  Input::setButtonState(is, PR, bitsA & (1 << P_RIGHT_BIT));
 
   inputState = is;
   newInputsReady = true;
